@@ -5,7 +5,7 @@ import dayjs from 'dayjs';
 import {nanoid} from 'nanoid';
 import he from 'he';
 import flatpickr from 'flatpickr';
-import '../../node_modules/flatpickr/dist/flatpickr.min.css';
+import 'flatpickr/dist/flatpickr.min.css';
 
 const EMPTY_WAYPOINT = {
   type: waypointTypes.keys().next().value,
@@ -25,14 +25,13 @@ const DeleteButtonLabel = {
 const createOffersTemplate = (offers, isDisabled) => {
   return offers && (offers.size > 0) ? `<section class="event__section  event__section--offers">
     <h3 class="event__section-title  event__section-title--offers">Offers</h3>
-
     <div class="event__available-offers">
       ${Array.from(offers).map(([key, value]) => `<div class="event__offer-selector">
         <input class="event__offer-checkbox  visually-hidden" id="event-offer-${key}-1" type="checkbox" data-offer-key="${key}" name="event-offer-${key}" ${value.selected ? `checked` : ``} ${isDisabled ? `disabled` : ``}>
         <label class="event__offer-label" for="event-offer-${key}-1">
-          <span class="event__offer-title">${value.title}</span>
+          <span class="event__offer-title">${Object.entries(value)[0][1].title}</span>
           &plus;&euro;&nbsp;
-          <span class="event__offer-price">${value.price}</span>
+          <span class="event__offer-price">${Object.entries(value)[0][1].price}</span>
         </label>
       </div>`).join(``)}
     </div>
@@ -43,7 +42,6 @@ const createDestinationsTemplate = (destination) => {
   return destination ? `<section class="event__section  event__section--destination">
   <h3 class="event__section-title  event__section-title--destination">Destination</h3>
   <p class="event__destination-description">${destination.description ? destination.description : ``}</p>
-
   ${destination.photos && (destination.photos.length > 0) ? `<div class="event__photos-container">
     <div class="event__photos-tape">
     ${destination.photos.map((photo) => `<img class="event__photo" src="${photo.src}" alt="${photo.description}">`).join(``)}
@@ -60,16 +58,15 @@ const createAvailableDestinationsTemplate = (availableDestinations) => {
   </datalist>` : ``;
 };
 
-const createTypesMenuTemplate = (types) => {
+
+const createTypesMenuTemplate = (types, waypointType) => {
   return `<div class="event__type-list">
     <fieldset class="event__type-group">
       <legend class="visually-hidden">Event type</legend>
-
       ${Array.from(types).map(([key, value]) => `<div class="event__type-item">
-      <input id="event-type-${key}-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${key}">
+      <input id="event-type-${key}-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${key}" ${key === waypointType ? `checked` : ``}>
       <label class="event__type-label  event__type-label--${key}" for="event-type-${key}-1">${value.title}</label>
     </div>`).join(``)}
-
     </fieldset>
   </div>`;
 };
@@ -97,7 +94,6 @@ const createWaypointEditTemplate = (state) => {
       <input class="event__type-toggle  visually-hidden" id="event-type-toggle-1" type="checkbox" ${isDisabled ? `disabled` : ``}>
       ${typesMenuTemplate}
     </div>
-
     <div class="event__field-group  event__field-group--destination">
         <label class="event__label  event__type-output" for="event-destination-1">
           ${type}
@@ -105,7 +101,6 @@ const createWaypointEditTemplate = (state) => {
         <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${destination ? he.encode(destination.name) : ``}" list="destination-list-1" autocomplete="off" ${isDisabled ? `disabled` : ``}>
           ${availableDestinationsTemplate}
       </div>
-
       <div class="event__field-group  event__field-group--time">
         <label class="visually-hidden" for="event-start-time-1">From</label>
         <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${formatDate(startTime, `DD/MM/YY HH:mm`)}" ${isDisabled ? `disabled` : ``}>
@@ -113,7 +108,6 @@ const createWaypointEditTemplate = (state) => {
         <label class="visually-hidden" for="event-end-time-1">To</label>
         <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${formatDate(endTime, `DD/MM/YY HH:mm`)}" ${isDisabled ? `disabled` : ``}>
       </div>
-
       <div class="event__field-group  event__field-group--price">
         <label class="event__label" for="event-price-1">
           <span class="visually-hidden">Price</span>
@@ -121,17 +115,13 @@ const createWaypointEditTemplate = (state) => {
         </label>
         <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value="${price}" pattern="\\d+" required autocomplete="off" ${isDisabled ? `disabled` : ``}>
       </div>
-
       <button class="event__save-btn  btn  btn--blue" type="submit" ${isDisabled ? `disabled` : ``}>${isSaving ? `Saving...` : `Save`}</button>
       <button class="event__reset-btn" type="reset" ${isDisabled ? `disabled` : ``}>${isDeleting ? `Deleting...` : deleteButtonLabel}</button>
-
       <button class="event__rollup-btn" type="button" ${isDisabled ? `disabled` : ``}>
       <span class="visually-hidden">Open event</span>
       </button>
     </header>
     <section class="event__details">
-
-
     <section class="event__details">
     ${offersTemplate}
     ${destinationInfoTemplate}
@@ -139,7 +129,6 @@ const createWaypointEditTemplate = (state) => {
   </form>
 </ol>`;
 };
-
 
 export default class EditWaypoint extends SmartView {
 
@@ -152,15 +141,15 @@ export default class EditWaypoint extends SmartView {
     this._dateFromPicker = null;
     this._dateToPicker = null;
 
-    this._onRollupButtonClickHandler = this._onRollupButtonClickHandler.bind(this);
-    this._onFormSubmitHandler = this._onFormSubmitHandler.bind(this);
-    this._onWaypointTypeChangeHandler = this._onWaypointTypeChangeHandler.bind(this);
-    this._onPriceInputHandler = this._onPriceInputHandler.bind(this);
-    this._onOfferToggleHandler = this._onOfferToggleHandler.bind(this);
-    this._onDestinationInputHandler = this._onDestinationInputHandler.bind(this);
-    this._onResetButtonClickHandler = this._onResetButtonClickHandler.bind(this);
-    this._dateFromCloseHandler = this._dateFromCloseHandler.bind(this);
-    this._dateToCloseHandler = this._dateToCloseHandler.bind(this);
+    this._onRollupButtonClick = this._onRollupButtonClick.bind(this);
+    this._onFormSubmit = this._onFormSubmit.bind(this);
+    this._onWaypointTypeListChange = this._onWaypointTypeListChange.bind(this);
+    this._onPriceInput = this._onPriceInput.bind(this);
+    this._onAvailableOffersToggle = this._onAvailableOffersToggle.bind(this);
+    this._onDestinationInput = this._onDestinationInput.bind(this);
+    this._onResetButtonClick = this._onResetButtonClick.bind(this);
+    this._onDateFromClose = this._onDateFromClose.bind(this);
+    this._onDateToClose = this._onDateToClose.bind(this);
 
 
     this._setInnerHandlers();
@@ -187,7 +176,7 @@ export default class EditWaypoint extends SmartView {
           dateFormat: `d/m/y H:i`,
           defaultDate: this._state.startTime,
           maxDate: dayjs(this._state.endTime).second(0).subtract(1, `m`).toDate(),
-          onClose: this._dateFromCloseHandler,
+          onClose: this._onDateFromClose,
         }
     );
   }
@@ -202,33 +191,13 @@ export default class EditWaypoint extends SmartView {
         this.getElement().querySelector(`input[name='event-end-time']`),
         {
           enableTime: true,
-          time_24hr: true,
+          [`time_24hr`]: true,
           dateFormat: `d/m/y H:i`,
           defaultDate: this._state.startTime,
           minDate: dayjs(this._state.endTime).second(0).add(1, `m`).toDate(),
-          onClose: this._dateToCloseHandler,
+          onClose: this._onDateToClose,
         }
     );
-  }
-
-  _dateFromCloseHandler([userDate]) {
-    this.updateData(
-        {
-          startTime: dayjs(userDate).second(0).toDate(),
-        },
-        true
-    );
-    this._setDateToPicker();
-  }
-
-  _dateToCloseHandler([userDate]) {
-    this.updateData(
-        {
-          endTime: dayjs(userDate).second(0).toDate(),
-        },
-        true
-    );
-    this._setDateFromPicker();
   }
 
   reset(waypoint) {
@@ -251,19 +220,19 @@ export default class EditWaypoint extends SmartView {
 
     this.getElement()
       .querySelector(`.event__rollup-btn`)
-      .addEventListener(`click`, this._onRollupButtonClickHandler);
+      .addEventListener(`click`, this._onRollupButtonClick);
   }
 
   setFormSubmitHandler(callback) {
     this._callback.submitForm = callback;
-    this.getElement().querySelector(`form`).addEventListener(`submit`, this._onFormSubmitHandler);
+    this.getElement().querySelector(`form`).addEventListener(`submit`, this._onFormSubmit);
   }
 
   setResetButtonClickHandler(callback) {
     this._callback.resetButtonClick = callback;
     this.getElement()
   .querySelector(`.event__reset-btn`)
-  .addEventListener(`click`, this._onResetButtonClickHandler);
+  .addEventListener(`click`, this._onResetButtonClick);
   }
 
   _buildDestinationOptions() {
@@ -295,35 +264,55 @@ export default class EditWaypoint extends SmartView {
   _setInnerHandlers() {
     this.getElement()
       .querySelector(`.event__type-list`)
-      .addEventListener(`change`, this._onWaypointTypeChangeHandler);
+      .addEventListener(`change`, this._onWaypointTypeListChange);
     const priceElement = this.getElement().querySelector(`.event__input--price`);
-    priceElement.addEventListener(`input`, this._onPriceInputHandler);
+    priceElement.addEventListener(`input`, this._onPriceInput);
 
-    const offersRenderedElement = this.getElement().querySelector(`.event__available-offers`);
-    if (offersRenderedElement) {
-      offersRenderedElement.addEventListener(`change`, this._onOfferToggleHandler);
+    const availableOffersElement = this.getElement().querySelector(`.event__available-offers`);
+    if (availableOffersElement) {
+      availableOffersElement.addEventListener(`change`, this._onAvailableOffersToggle);
     }
 
     const destinationElement = this.getElement().querySelector(`.event__input--destination`);
-    destinationElement.addEventListener(`input`, this._onDestinationInputHandler);
+    destinationElement.addEventListener(`input`, this._onDestinationInput);
   }
 
-  _onRollupButtonClickHandler(evt) {
+  _onDateFromClose([userDate]) {
+    this.updateData(
+        {
+          startTime: dayjs(userDate).second(0).toDate(),
+        },
+        true
+    );
+    this._setDateToPicker();
+  }
+
+  _onDateToClose([userDate]) {
+    this.updateData(
+        {
+          endTime: dayjs(userDate).second(0).toDate(),
+        },
+        true
+    );
+    this._setDateFromPicker();
+  }
+
+  _onRollupButtonClick(evt) {
     evt.preventDefault();
-    this._callback.clickRollupButton(this._waypoint);
+    this._callback.clickRollupButton(EditWaypoint.parseStateToWaypoint(this._state));
   }
 
-  _onFormSubmitHandler(evt) {
+  _onFormSubmit(evt) {
     evt.preventDefault();
-    this._callback.submitForm();
+    this._callback.submitForm(EditWaypoint.parseStateToWaypoint(this._state));
   }
 
-  _onResetButtonClickHandler(evt) {
+  _onResetButtonClick(evt) {
     evt.preventDefault();
     this._callback.resetButtonClick(EditWaypoint.parseStateToWaypoint(this._state));
   }
 
-  _onDestinationInputHandler(evt) {
+  _onDestinationInput(evt) {
     evt.preventDefault();
     this._validateAll();
 
@@ -338,7 +327,7 @@ export default class EditWaypoint extends SmartView {
     );
   }
 
-  _onOfferToggleHandler(evt) {
+  _onAvailableOffersToggle(evt) {
     if (evt.target.tagName !== `INPUT`) {
       return;
     }
@@ -352,8 +341,7 @@ export default class EditWaypoint extends SmartView {
     });
   }
 
-
-  _onWaypointTypeChangeHandler(evt) {
+  _onWaypointTypeListChange(evt) {
 
     if (evt.target.tagName !== `INPUT`) {
       return;
@@ -368,14 +356,13 @@ export default class EditWaypoint extends SmartView {
     });
   }
 
-  _onPriceInputHandler(evt) {
+  _onPriceInput(evt) {
     evt.preventDefault();
     this._validateAll();
     this.updateData({
       price: parseInt(evt.target.value, 10)
     }, true);
   }
-
 
   static parsePointToState(waypoint, offers, destinations) {
     const deleteButtonLabel = (waypoint === EMPTY_WAYPOINT) ? DeleteButtonLabel.ADD : DeleteButtonLabel.EDIT;
@@ -384,7 +371,7 @@ export default class EditWaypoint extends SmartView {
 
     const offerSelectionMap = EditWaypoint._createOfferSelectionForType(waypoint.offers, offersForType);
 
-    const availableDestinations = [...destinations.keys()];
+    const availableDestinations = [...destinations.get().keys()];
 
     return Object.assign(
         {},
@@ -400,7 +387,7 @@ export default class EditWaypoint extends SmartView {
     );
   }
 
-  static parseStateToWayoint(state) {
+  static parseStateToWaypoint(state) {
     const waypoint = Object.assign({}, state);
 
     const offers = [];
@@ -423,15 +410,15 @@ export default class EditWaypoint extends SmartView {
     return waypoint;
   }
 
-  static _createOfferSelectionForType(selectedOffers, allOffersForType) {
+  static _createOfferSelectionForType(selectedOffers, allOffersForTypes) {
     const offerSelectionMap = new Map();
 
-    allOffersForType.forEach((value) => {
-      const findOffer = selectedOffers.find((selectedOffer) => selectedOffer.title === value.title);
+    allOffersForTypes.forEach((value) => {
+      const offer = selectedOffers.find((selectedOffer) => selectedOffer.title === value.title);
 
       let isSelected = false;
 
-      if (findOffer) {
+      if (offer) {
         isSelected = true;
       }
 

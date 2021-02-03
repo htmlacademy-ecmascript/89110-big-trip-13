@@ -6,10 +6,16 @@ export const SortType = {
   OFFER: `sort-offer`
 };
 
+export const State = {
+  SAVING: `SAVING`,
+  DELETING: `DELETING`,
+  ABORTING: `ABORTING`
+};
+
 export const UserAction = {
-  UPDATE_WAYPOINT: `UPDATE_EVENT`,
-  ADD_WAYPOINT: `ADD_EVENT`,
-  DELETE_WAYPOINT: `DELETE_EVENT`
+  UPDATE_POINT: `UPDATE_POINT`,
+  ADD_POINT: `ADD_POINT`,
+  DELETE_POINT: `DELETE_POINT`
 };
 
 export const FilterType = {

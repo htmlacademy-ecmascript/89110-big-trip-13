@@ -18,6 +18,7 @@ const getDestinationsForTrip = (waypoints) => {
 
 
 export const getTripInfo = (waypoints) => {
+
   if (!waypoints || waypoints.length === 0) {
     return null;
   }
@@ -69,9 +70,8 @@ export const isFutureDate = (date) => {
   return date === null ? false : dayjs().isBefore(date, `day`) || dayjs().isSame(date, `day`);
 };
 
-
 export const formatDuration = (startTime, endTime) => {
-  const durationInMs = dayjs.duration(dayjs(startTime).diff(dayjs(endTime)));
+  const durationInMs = dayjs.duration(dayjs(endTime).diff(dayjs(startTime)));
 
   return formatDurationMs(durationInMs.asMilliseconds());
 };

@@ -15,9 +15,9 @@ const createWaypointOfferTemplates = ({title, price}) => {
 };
 
 const createWaypointOffersTemplate = (offers) => {
-  return offers.size > 0 ? `<h4 class="visually-hidden">Offers:</h4>
+  return offers.length > 0 ? `<h4 class="visually-hidden">Offers:</h4>
     <ul class="event__selected-offers">
-    ${Array.from(offers).map(([, offerValue]) => createWaypointOfferTemplates(offerValue)).join(``)}
+    ${Array.from(offers).map((offerValue) => createWaypointOfferTemplates(offerValue)).join(``)}
   </ul>` : ``;
 };
 
@@ -26,6 +26,7 @@ const createCardTemplate = (waypoint) => {
   const {type, startTime, endTime, destination, price, isFavorite, offers} = waypoint;
 
   const offersTemplate = createWaypointOffersTemplate(offers);
+
 
   const formattedDuration = formatDuration(startTime, endTime);
 
@@ -41,7 +42,6 @@ const createCardTemplate = (waypoint) => {
           <img class="event__type-icon" width="42" height="42" src="${typeIcon}" alt="Event type icon">
         </div>
         <h3 class="event__title">${type} ${destination.name}</h3>
-
         <div class="event__schedule">
           <p class="event__time">
             <time class="event__start-time" datetime="${formatDate(startTime, `YYYY-MM-DDTHH:mm`)}">${formatDate(startTime, `HH:mm`)}</time>
@@ -50,13 +50,10 @@ const createCardTemplate = (waypoint) => {
           </p>
           <p class="event__duration">${formattedDuration}</p>
         </div>
-
         <p class="event__price">
           &euro;&nbsp;<span class="event__price-value">${price}</span>
         </p>
-
         ${offersTemplate}
-
         <button class="${favoriteClassName}" type="button">
           <span class="visually-hidden">Add to favorite</span>
           <svg class="event__favorite-icon" width="28" height="28" viewBox="0 0 28 28">
@@ -77,8 +74,8 @@ export default class TripWaypoint extends AbstractView {
     super();
     this._waypoint = waypoint;
 
-    this._onRollupButtonClickHandler = this._onRollupButtonClickHandler.bind(this);
-    this._onFavoriteClickHandler = this._onFavoriteClickHandler.bind(this);
+    this._onRollupButtonClick = this._onRollupButtonClick.bind(this);
+    this._onFavoriteClick = this._onFavoriteClick.bind(this);
   }
 
   getTemplate() {
@@ -87,21 +84,21 @@ export default class TripWaypoint extends AbstractView {
 
   setRollupButtonClickHandler(callback) {
     this._callback.clickCard = callback;
-    this.getElement().querySelector(`.event__rollup-btn`).addEventListener(`click`, this._onRollupButtonClickHandler);
+    this.getElement().querySelector(`.event__rollup-btn`).addEventListener(`click`, this._onRollupButtonClick);
   }
 
   setFavoriteClickHandler(callback) {
     this._callback.clickFavorite = callback;
     this.getElement().querySelector(`.event__favorite-btn`)
-      .addEventListener(`click`, this._onFavoriteClickHandler);
+      .addEventListener(`click`, this._onFavoriteClick);
   }
 
-  _onRollupButtonClickHandler(evt) {
+  _onRollupButtonClick(evt) {
     evt.preventDefault();
     this._callback.clickCard();
   }
 
-  _onFavoriteClickHandler(evt) {
+  _onFavoriteClick(evt) {
     evt.preventDefault();
     this._callback.clickFavorite();
   }

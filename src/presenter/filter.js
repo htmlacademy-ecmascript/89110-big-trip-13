@@ -4,8 +4,8 @@ import {FilterType, UpdateType} from '../utils/const.js';
 import {filter} from '../utils/filter.js';
 
 export default class Filter {
-  constructor(filterContainer, filterModel, waypointsModel) {
-    this._filterContainer = filterContainer;
+  constructor(controlElement, filterModel, waypointsModel) {
+    this._controlElement = controlElement;
     this._filterModel = filterModel;
     this._waypointsModel = waypointsModel;
 
@@ -20,16 +20,16 @@ export default class Filter {
   }
 
   init() {
-    this._currentFilter = this._filterModel.getFilter();
+    this._currentFilter = this._filterModel.get();
 
     const prevFilterComponent = this._filterComponent;
 
     const filters = this._getFilters();
     this._filterComponent = new FilterView(this._currentFilter, filters);
-    this._filterComponent.setOnFilterTypeChange(this._handleFilterTypeChange);
+    this._filterComponent.setOnTypeChange(this._handleFilterTypeChange);
 
     if (prevFilterComponent === null) {
-      render(this._filterContainer, this._filterComponent, RenderPosition.AFTEREND);
+      render(this._controlElement, this._filterComponent, RenderPosition.AFTEREND);
       return;
     }
 
@@ -38,7 +38,7 @@ export default class Filter {
   }
 
   _getFilters() {
-    const waypoints = this._waypointsModel.getWaypoints();
+    const waypoints = this._waypointsModel.get();
 
     return {
       [FilterType.EVERYTHING]: true,
@@ -53,7 +53,7 @@ export default class Filter {
     }
 
     this._currentFilter = filterType;
-    this._filterModel.setFilter(UpdateType.MAJOR, this._currentFilter);
+    this._filterModel.set(UpdateType.MAJOR, this._currentFilter);
   }
 
   _handleModelEvent() {

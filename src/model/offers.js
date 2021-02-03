@@ -3,15 +3,15 @@ import Observer from '../utils/observer.js';
 export default class Offers extends Observer {
   constructor() {
     super();
-    this._offers = new Map();
+    this._items = new Map();
   }
 
-  setOffers(offers) {
-    this._offers = new Map(offers);
+  set(offers) {
+    this._items = new Map(offers);
   }
 
-  getOffers() {
-    return this._offers;
+  get() {
+    return this._items;
   }
 
   static adaptToClient(offers) {
